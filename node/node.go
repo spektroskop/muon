@@ -31,17 +31,6 @@ func (node *Node) Unlink() {
 	node.prev.Link(node.next)
 }
 
-func (node *Node) Shift(head *Node) {
-	next := node.next
-	node.Unlink()
-	if head != nil && next == head {
-		next = head.next
-
-	}
-
-	node.Insert(next, next.prev)
-}
-
 func (node *Node) Next(head *Node) *Node {
 	next := node.next
 
@@ -60,6 +49,34 @@ func (node *Node) Prev(head *Node) *Node {
 	}
 
 	return prev
+}
+
+func (node *Node) Select(head *Node, n int) *Node {
+	switch {
+	case n < 0:
+		for ; n < 0; n++ {
+			node = node.Prev(head)
+		}
+	case n > 0:
+		for ; n > 0; n-- {
+			node = node.Next(head)
+		}
+	}
+
+	return node
+}
+
+func (node *Node) Shift(head *Node, n int) {
+	switch {
+	case n < 0:
+		for ; n < 0; n++ {
+			// TODO
+		}
+	case n > 0:
+		for ; n > 0; n-- {
+			// TODO
+		}
+	}
 }
 
 func (node *Node) Swap(other *Node) {

@@ -25,17 +25,7 @@ func process(cmd []string) error {
 			}
 		}
 
-		switch {
-		case selector < 0:
-			for ; selector < 0; selector++ {
-				manager.Focus = manager.Focus.Prev(manager.Monitors)
-			}
-		case selector > 0:
-			for ; selector > 0; selector-- {
-				manager.Focus = manager.Focus.Next(manager.Monitors)
-			}
-		}
-
+		manager.Focus = manager.Focus.Select(manager.Monitors, selector)
 		manager.WithMonitor(func(monitor *manager.Monitor) {
 			monitor.SetFocus(monitor.Focus)
 		})
@@ -58,19 +48,7 @@ func process(cmd []string) error {
 		}
 
 		manager.WithMonitor(func(monitor *manager.Monitor) {
-			focus := monitor.Focus
-
-			switch {
-			case selector < 0:
-				for ; selector < 0; selector++ {
-					focus = focus.Prev(monitor.Windows)
-				}
-			case selector > 0:
-				for ; selector > 0; selector-- {
-					focus = focus.Next(monitor.Windows)
-				}
-			}
-
+			focus := monitor.Focus.Select(monitor.Windows, selector)
 			monitor.SetFocus(focus)
 		})
 	case "shift-window":
@@ -86,17 +64,7 @@ func process(cmd []string) error {
 		}
 
 		manager.WithMonitor(func(monitor *manager.Monitor) {
-			switch {
-			case selector < 0:
-				for ; selector < 0; selector++ {
-					// monitor.Focus.Shift(monitor.Windows)
-				}
-			case selector > 0:
-				for ; selector > 0; selector-- {
-					// monitor.Focus.Unshift(monitor.Windows)
-				}
-			}
-
+			monitor.Focus.Shift(monitor.Windows, selector)
 			monitor.Arrange()
 		})
 	case "make-root":
