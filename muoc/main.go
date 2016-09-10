@@ -20,12 +20,12 @@ var (
 func main() {
 	flag.Parse()
 
-	conn, err := net.DialTimeout(*kind, *address, time.Duration(*timeout))
+	conn, err := net.DialTimeout(*kind, *address, time.Second*time.Duration(*timeout))
 	if err != nil {
 		logrus.Fatal(err)
 	}
 
-	conn.SetDeadline(time.Now().Add(time.Duration(*timeout)))
+	conn.SetDeadline(time.Now().Add(time.Second * time.Duration(*timeout)))
 	defer conn.Close()
 
 	args := strings.Join(os.Args[1:], " ")
