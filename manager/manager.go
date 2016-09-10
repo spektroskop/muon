@@ -165,7 +165,7 @@ func WithMonitor(f func(monitor *Monitor)) {
 	MonitorNode(Focus, f)
 }
 
-func PointedWindow() (*node.Node, *node.Node) {
+func WindowFromPointer() (*node.Node, *node.Node) {
 	reply, err := xproto.QueryPointer(Conn, Root).Reply()
 	if err != nil {
 		logrus.Errorf("Could not query pointer: %s", err)
@@ -190,7 +190,7 @@ func WindowFromId(id xproto.Window) (*node.Node, *node.Node) {
 	for _, monitorNode := range Monitors.Nodes() {
 		var windowNode *node.Node
 		MonitorNode(monitorNode, func(monitor *Monitor) {
-			windowNode = monitor.Find(id)
+			windowNode = monitor.WindowFromId(id)
 		})
 
 		return monitorNode, windowNode

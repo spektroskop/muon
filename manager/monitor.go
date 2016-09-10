@@ -67,7 +67,7 @@ func (m *Monitor) SetFocus(node *node.Node) {
 	m.Focus = node
 }
 
-func (m *Monitor) Find(id xproto.Window) *node.Node {
+func (m *Monitor) WindowFromId(id xproto.Window) *node.Node {
 	for _, node := range m.Windows.Nodes() {
 		if node.Value.(*Window).Id == id {
 			return node

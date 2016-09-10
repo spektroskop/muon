@@ -40,8 +40,7 @@ func process(cmd []string) error {
 			monitor.SetFocus(monitor.Focus)
 		})
 	case "focus-window":
-		monitor, window := manager.PointedWindow()
-		if window != nil {
+		if monitor, window := manager.WindowFromPointer(); window != nil {
 			manager.MonitorNode(monitor, func(monitor *manager.Monitor) {
 				monitor.SetFocus(window)
 			})
