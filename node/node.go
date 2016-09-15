@@ -105,7 +105,7 @@ func (head *Node) Len() (length int) {
 	return
 }
 
-func (head *Node) Nodes() []*Node {
+func (head *Node) All() []*Node {
 	var nodes []*Node
 
 	for n := head.next; n != head; n = n.next {

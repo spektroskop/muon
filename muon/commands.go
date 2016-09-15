@@ -25,13 +25,13 @@ func process(cmd []string) error {
 			}
 		}
 
-		manager.Focus = manager.Focus.Select(manager.Monitors, selector)
-		manager.WithMonitor(func(monitor *manager.Monitor) {
+		manager.Focus = manager.Focus.Select(manager.Nodes, selector)
+		manager.WithFocus(func(monitor *manager.Monitor) {
 			monitor.SetFocus(monitor.Focus)
 		})
 	case "focus-window":
-		if monitor, window := manager.WindowFromPointer(); window != nil {
-			manager.MonitorNode(monitor, func(monitor *manager.Monitor) {
+		if monitor, window := manager.NodesFromPointer(); window != nil {
+			manager.WithMonitorNode(monitor, func(monitor *manager.Monitor) {
 				monitor.SetFocus(window)
 			})
 		}
@@ -47,8 +47,8 @@ func process(cmd []string) error {
 			}
 		}
 
-		manager.WithMonitor(func(monitor *manager.Monitor) {
-			focus := monitor.Focus.Select(monitor.Windows, selector)
+		manager.WithFocus(func(monitor *manager.Monitor) {
+			focus := monitor.Focus.Select(monitor.Nodes, selector)
 			monitor.SetFocus(focus)
 		})
 	case "shift-window":
@@ -63,30 +63,30 @@ func process(cmd []string) error {
 			}
 		}
 
-		manager.WithMonitor(func(monitor *manager.Monitor) {
-			monitor.Focus.Shift(monitor.Windows, selector)
+		manager.WithFocus(func(monitor *manager.Monitor) {
+			monitor.Focus.Shift(monitor.Nodes, selector)
 			monitor.Arrange()
 		})
 	case "make-root":
-		manager.WithMonitor(func(monitor *manager.Monitor) {
+		manager.WithFocus(func(monitor *manager.Monitor) {
 			if monitor.Focus != nil {
-				monitor.Windows.First().Swap(monitor.Focus)
-				monitor.SetFocus(monitor.Windows.First())
+				monitor.Nodes.First().Swap(monitor.Focus)
+				monitor.SetFocus(monitor.Nodes.First())
 				monitor.Arrange()
 			}
 		})
 	case "next-layout":
-		manager.WithMonitor(func(monitor *manager.Monitor) {
+		manager.WithFocus(func(monitor *manager.Monitor) {
 			monitor.Layout = monitor.Layout.Next(nil)
 			monitor.Arrange()
 		})
 	case "reset-layout":
-		manager.WithMonitor(func(monitor *manager.Monitor) {
+		manager.WithFocus(func(monitor *manager.Monitor) {
 			monitor.Reset()
 			monitor.Arrange()
 		})
 	case "mirror-layout":
-		manager.WithMonitor(func(monitor *manager.Monitor) {
+		manager.WithFocus(func(monitor *manager.Monitor) {
 			monitor.Mirrored = !monitor.Mirrored
 			monitor.Arrange()
 		})
@@ -100,7 +100,7 @@ func process(cmd []string) error {
 			return err
 		}
 
-		manager.WithMonitor(func(monitor *manager.Monitor) {
+		manager.WithFocus(func(monitor *manager.Monitor) {
 			if strings.HasPrefix(cmd[1], "+") || strings.HasPrefix(cmd[1], "-") {
 				ratio += monitor.Ratio
 			}
@@ -124,12 +124,12 @@ func process(cmd []string) error {
 			return err
 		}
 
-		manager.WithMonitor(func(monitor *manager.Monitor) {
+		manager.WithFocus(func(monitor *manager.Monitor) {
 			if strings.HasPrefix(cmd[1], "+") || strings.HasPrefix(cmd[1], "-") {
 				value += monitor.Roots
 			}
 
-			if count := monitor.Windows.Len(); value > count {
+			if count := monitor.Nodes.Len(); value > count {
 				value = count
 			} else if value < 1 {
 				value = 1

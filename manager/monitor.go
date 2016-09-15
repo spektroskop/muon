@@ -16,7 +16,7 @@ type Monitor struct {
 
 	Name string
 
-	Windows *node.Node
+	Nodes *node.Node
 	Focus   *node.Node
 	Layout  *node.Node
 
@@ -39,7 +39,7 @@ func NewMonitor(name string, geometry util.Geometry) *Monitor {
 	m := &Monitor{
 		Name:     name,
 		Geometry: geometry,
-		Windows:  node.New(nil),
+		Nodes:  node.New(nil),
 		Focus:    nil,
 	}
 
@@ -60,15 +60,16 @@ func (m *Monitor) SetFocus(node *node.Node) {
 		focus.SetBorderColor(InactiveBorder)
 	}
 
-	window := node.Value.(*Window)
-	window.SetBorderColor(ActiveBorder)
-	window.Focus()
+	WithWindowNode(node, func(window *Window) {
+		window.SetBorderColor(ActiveBorder)
+		window.Focus()
+	})
 
 	m.Focus = node
 }
 
-func (m *Monitor) WindowFromId(id xproto.Window) *node.Node {
-	for _, node := range m.Windows.Nodes() {
+func (m *Monitor) NodeFromId(id xproto.Window) *node.Node {
+	for _, node := range m.Nodes.All() {
 		if node.Value.(*Window).Id == id {
 			return node
 		}
@@ -89,9 +90,9 @@ func (m *Monitor) Arrange() {
 	logrus.Debugf("Arrange monitor `%s'", m.Name)
 
 	arranger := m.Layout.Value.(Arranger)
-	geom := arranger(m, m.Windows.Len())
+	geom := arranger(m, m.Nodes.Len())
 
-	for i, node := range m.Windows.Nodes() {
+	for i, node := range m.Nodes.All() {
 		window := node.Value.(*Window)
 		g := geom[i]
 

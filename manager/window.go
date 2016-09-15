@@ -34,7 +34,7 @@ func Manage(id xproto.Window, attr *xproto.GetWindowAttributesReply) *Window {
 		return nil
 	}
 
-	monitor := MonitorFromCoordinates(int(reply.X), int(reply.Y))
+	monitor, _ := MonitorFromCoordinates(int(reply.X), int(reply.Y))
 	if monitor == nil {
 		logrus.Errorf("Could not find monitor for window 0x%08x", id)
 		return nil
@@ -44,7 +44,8 @@ func Manage(id xproto.Window, attr *xproto.GetWindowAttributesReply) *Window {
 
 	window := &Window{Id: id}
 	node := node.New(window)
-	monitor.Windows.Append(node)
+	monitor.Nodes.Append(node)
+
 	if monitor.Focus == nil {
 		monitor.Focus = node
 		window.Focus()

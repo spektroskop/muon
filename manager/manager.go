@@ -16,7 +16,7 @@ var (
 	Screen   *xproto.ScreenInfo
 	Colormap xproto.Colormap
 	Root     xproto.Window
-	Monitors = node.New(nil)
+	Nodes    = node.New(nil)
 	Focus    *node.Node
 
 	ActiveBorder   uint32
@@ -90,7 +90,7 @@ func monitor() error {
 			}
 			monitor := NewMonitor(string(outputInfo.Name), geometry)
 			node := node.New(monitor)
-			Monitors.Append(node)
+			Nodes.Append(node)
 
 			logrus.Debugf("Monitor `%s' %s", monitor.Name, geometry)
 
@@ -123,7 +123,7 @@ func manage() error {
 		Manage(id, attr)
 	}
 
-	for _, node := range Monitors.Nodes() {
+	for _, node := range Nodes.All() {
 		monitor := node.Value.(*Monitor)
 		monitor.Arrange()
 	}
@@ -153,44 +153,21 @@ func listen() error {
 	return nil
 }
 
-func MonitorNode(node *node.Node, f func(monitor *Monitor)) {
-	if monitor, ok := node.Value.(*Monitor); !ok {
-		logrus.Error("Could not get monitor from node")
-	} else {
-		f(monitor)
-	}
-}
-
-func WithMonitor(f func(monitor *Monitor)) {
-	MonitorNode(Focus, f)
-}
-
-func WindowFromPointer() (*node.Node, *node.Node) {
+func NodesFromPointer() (*node.Node, *node.Node) {
 	reply, err := xproto.QueryPointer(Conn, Root).Reply()
 	if err != nil {
 		logrus.Errorf("Could not query pointer: %s", err)
 		return nil, nil
 	}
 
-	return WindowFromId(reply.Child)
+	return NodesFromId(reply.Child)
 }
 
-func MonitorFromCoordinates(x, y int) *Monitor {
-	for _, node := range Monitors.Nodes() {
-		monitor := node.Value.(*Monitor)
-		if monitor.Geometry.Contains(x, y) {
-			return monitor
-		}
-	}
-
-	return nil
-}
-
-func WindowFromId(id xproto.Window) (*node.Node, *node.Node) {
-	for _, monitorNode := range Monitors.Nodes() {
+func NodesFromId(id xproto.Window) (*node.Node, *node.Node) {
+	for _, monitorNode := range Nodes.All() {
 		var windowNode *node.Node
-		MonitorNode(monitorNode, func(monitor *Monitor) {
-			windowNode = monitor.WindowFromId(id)
+		WithMonitorNode(monitorNode, func(monitor *Monitor) {
+			windowNode = monitor.NodeFromId(id)
 		})
 
 		return monitorNode, windowNode
