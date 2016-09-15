@@ -3,7 +3,7 @@ package manager
 import (
 	"github.com/BurntSushi/xgb/xproto"
 	"github.com/Sirupsen/logrus"
-	"github.com/spektroskop/muon/node"
+	"github.com/spektroskop/muon/nd"
 	"github.com/spektroskop/muon/util"
 )
 
@@ -11,7 +11,7 @@ type Window struct {
 	Id xproto.Window
 }
 
-func Manage(id xproto.Window, attr *xproto.GetWindowAttributesReply) *Window {
+func Manage(id xproto.Window, attr *xproto.GetWindowAttributesReply) *nd.Node {
 	if attr == nil {
 		var err error
 		attr, err = xproto.GetWindowAttributes(Conn, id).Reply()
@@ -45,16 +45,21 @@ func Manage(id xproto.Window, attr *xproto.GetWindowAttributesReply) *Window {
 	window := &Window{Id: id}
 	window.SetBorderColor(InactiveBorder)
 
-	node := node.New(window)
-	monitor.Nodes.Append(node)
+	node := nd.New(window)
 
 	if monitor.Focus == nil {
-		monitor.Focus = node
-		window.Focus()
-		window.SetBorderColor(ActiveBorder)
+		monitor.Root = node
+	} else {
+		current := monitor.Focus.Value.(*Window)
+		current.SetBorderColor(InactiveBorder)
+		node.Link(monitor.Focus)
 	}
 
-	return window
+	monitor.Focus = node
+	window.Focus()
+	window.SetBorderColor(ActiveBorder)
+
+	return node
 }
 
 func (window *Window) SetBorderColor(color uint32) {

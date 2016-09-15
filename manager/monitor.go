@@ -5,7 +5,7 @@ import (
 
 	"github.com/BurntSushi/xgb/xproto"
 	"github.com/Sirupsen/logrus"
-	"github.com/spektroskop/muon/node"
+	"github.com/spektroskop/muon/nd"
 	"github.com/spektroskop/muon/util"
 )
 
@@ -16,9 +16,10 @@ type Monitor struct {
 
 	Name string
 
-	Nodes *node.Node
-	Focus   *node.Node
-	Layout  *node.Node
+	Root  *nd.Node
+	Focus *nd.Node
+
+	Layout *nd.Node
 
 	Ratio    float64
 	Border   int
@@ -36,12 +37,7 @@ func (m *Monitor) Reset() {
 }
 
 func NewMonitor(name string, geometry util.Geometry) *Monitor {
-	m := &Monitor{
-		Name:     name,
-		Geometry: geometry,
-		Nodes:  node.New(nil),
-		Focus:    nil,
-	}
+	m := &Monitor{Name: name, Geometry: geometry}
 
 	m.Reset()
 	m.AddLayout(Standing)
@@ -54,7 +50,7 @@ func (m Monitor) String() string {
 	return fmt.Sprintf("%s: %s", m.Name, m.Geometry.String())
 }
 
-func (m *Monitor) SetFocus(node *node.Node) {
+func (m *Monitor) SetFocus(node *nd.Node) {
 	if m.Focus != nil {
 		focus := m.Focus.Value.(*Window)
 		focus.SetBorderColor(InactiveBorder)
@@ -68,8 +64,8 @@ func (m *Monitor) SetFocus(node *node.Node) {
 	m.Focus = node
 }
 
-func (m *Monitor) NodeFromId(id xproto.Window) *node.Node {
-	for _, node := range m.Nodes.All() {
+func (m *Monitor) NodeFromId(id xproto.Window) *nd.Node {
+	for _, node := range m.Root.All() {
 		if node.Value.(*Window).Id == id {
 			return node
 		}
@@ -79,10 +75,10 @@ func (m *Monitor) NodeFromId(id xproto.Window) *node.Node {
 }
 
 func (m *Monitor) AddLayout(arranger Arranger) {
-	if node := node.New(arranger); m.Layout == nil {
+	if node := nd.New(arranger); m.Layout == nil {
 		m.Layout = node
 	} else {
-		m.Layout.Append(node)
+		m.Layout.Prev().Link(node)
 	}
 }
 
@@ -90,9 +86,9 @@ func (m *Monitor) Arrange() {
 	logrus.Debugf("Arrange monitor `%s'", m.Name)
 
 	arranger := m.Layout.Value.(Arranger)
-	geom := arranger(m, m.Nodes.Len())
+	geom := arranger(m, m.Root.Len())
 
-	for i, node := range m.Nodes.All() {
+	for i, node := range m.Root.All() {
 		window := node.Value.(*Window)
 		g := geom[i]
 

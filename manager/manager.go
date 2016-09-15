@@ -7,7 +7,7 @@ import (
 	"github.com/BurntSushi/xgb/randr"
 	"github.com/BurntSushi/xgb/xproto"
 	"github.com/Sirupsen/logrus"
-	"github.com/spektroskop/muon/node"
+	"github.com/spektroskop/muon/nd"
 	"github.com/spektroskop/muon/util"
 )
 
@@ -16,8 +16,7 @@ var (
 	Screen   *xproto.ScreenInfo
 	Colormap xproto.Colormap
 	Root     xproto.Window
-	Nodes    = node.New(nil)
-	Focus    *node.Node
+	Focus    *nd.Node
 
 	ActiveBorder   uint32
 	InactiveBorder uint32
@@ -89,14 +88,15 @@ func monitor() error {
 				Height: int(crtcInfo.Height),
 			}
 			monitor := NewMonitor(string(outputInfo.Name), geometry)
-			node := node.New(monitor)
-			Nodes.Append(node)
-
-			logrus.Debugf("Monitor `%s' %s", monitor.Name, geometry)
+			node := nd.New(monitor)
 
 			if Focus == nil {
 				Focus = node
+			} else {
+				Focus.Prev().Link(node)
 			}
+
+			logrus.Debugf("Monitor `%s' %s", monitor.Name, geometry)
 		}
 	}
 
@@ -123,7 +123,7 @@ func manage() error {
 		Manage(id, attr)
 	}
 
-	for _, node := range Nodes.All() {
+	for _, node := range Focus.All() {
 		monitor := node.Value.(*Monitor)
 		monitor.Arrange()
 	}
@@ -158,7 +158,7 @@ func listen() error {
 	return nil
 }
 
-func NodesFromPointer() (*node.Node, *node.Node) {
+func NodesFromPointer() (*nd.Node, *nd.Node) {
 	reply, err := xproto.QueryPointer(Conn, Root).Reply()
 	if err != nil {
 		logrus.Errorf("Could not query pointer: %s", err)
@@ -168,9 +168,9 @@ func NodesFromPointer() (*node.Node, *node.Node) {
 	return NodesFromId(reply.Child)
 }
 
-func NodesFromId(id xproto.Window) (*node.Node, *node.Node) {
-	for _, monitorNode := range Nodes.All() {
-		var windowNode *node.Node
+func NodesFromId(id xproto.Window) (*nd.Node, *nd.Node) {
+	for _, monitorNode := range Focus.All() {
+		var windowNode *nd.Node
 		WithMonitorNode(monitorNode, func(monitor *Monitor) {
 			windowNode = monitor.NodeFromId(id)
 		})

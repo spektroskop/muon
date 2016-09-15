@@ -25,7 +25,7 @@ func process(cmd []string) error {
 			}
 		}
 
-		manager.Focus = manager.Focus.Select(manager.Nodes, selector)
+		manager.Focus = manager.Focus.Select(selector)
 		manager.WithFocus(func(monitor *manager.Monitor) {
 			monitor.SetFocus(monitor.Focus)
 		})
@@ -48,7 +48,7 @@ func process(cmd []string) error {
 		}
 
 		manager.WithFocus(func(monitor *manager.Monitor) {
-			focus := monitor.Focus.Select(monitor.Nodes, selector)
+			focus := monitor.Focus.Select(selector)
 			monitor.SetFocus(focus)
 		})
 	case "shift-window":
@@ -63,21 +63,21 @@ func process(cmd []string) error {
 			}
 		}
 
-		manager.WithFocus(func(monitor *manager.Monitor) {
-			monitor.Focus.Shift(monitor.Nodes, selector)
-			monitor.Arrange()
-		})
+		// manager.WithFocus(func(monitor *manager.Monitor) {
+		// 	monitor.Focus.Shift(monitor.Windows, selector)
+		// 	monitor.Arrange()
+		// })
 	case "make-root":
 		manager.WithFocus(func(monitor *manager.Monitor) {
 			if monitor.Focus != nil {
-				monitor.Nodes.First().Swap(monitor.Focus)
-				monitor.SetFocus(monitor.Nodes.First())
+				monitor.Root.Swap(monitor.Focus)
+				monitor.SetFocus(monitor.Root)
 				monitor.Arrange()
 			}
 		})
 	case "next-layout":
 		manager.WithFocus(func(monitor *manager.Monitor) {
-			monitor.Layout = monitor.Layout.Next(nil)
+			monitor.Layout = monitor.Layout.Next()
 			monitor.Arrange()
 		})
 	case "reset-layout":
@@ -129,7 +129,7 @@ func process(cmd []string) error {
 				value += monitor.Roots
 			}
 
-			if count := monitor.Nodes.Len(); value > count {
+			if count := monitor.Root.Len(); value > count {
 				value = count
 			} else if value < 1 {
 				value = 1

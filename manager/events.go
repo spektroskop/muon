@@ -4,20 +4,20 @@ import (
 	"fmt"
 
 	"github.com/BurntSushi/xgb/xproto"
-	"github.com/spektroskop/muon/node"
 )
 
 func MapRequest(event xproto.MapRequestEvent) (err error) {
-	window := Manage(event.Window, nil)
-	node := node.New(window)
+	node := Manage(event.Window, nil)
 
-	WithMonitorNode(Focus, func(monitor *Monitor) {
-		monitor.Nodes.Append(node)
-		monitor.Arrange()
-		if err = xproto.MapWindowChecked(Conn, window.Id).Check(); err != nil {
-			return
-		}
-		monitor.SetFocus(node)
+	WithWindowNode(node, func(window *Window) {
+		WithMonitorNode(Focus, func(monitor *Monitor) {
+			node.Link(monitor.Focus)
+			monitor.Arrange()
+			if err = xproto.MapWindowChecked(Conn, window.Id).Check(); err != nil {
+				return
+			}
+			monitor.SetFocus(node)
+		})
 	})
 
 	return err
@@ -30,7 +30,7 @@ func DestroyNotify(event xproto.DestroyNotifyEvent) error {
 	}
 
 	WithMonitorNode(monitor, func(monitor *Monitor) {
-		monitor.SetFocus(window.Prev(monitor.Nodes))
+		monitor.SetFocus(window.Prev())
 		window.Unlink()
 		monitor.Arrange()
 	})
