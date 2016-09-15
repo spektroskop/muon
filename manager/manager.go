@@ -142,10 +142,15 @@ func listen() error {
 
 			logrus.Debugf("Event: %s", event)
 
-			switch /* actual := */ event.(type) {
+			switch actual := event.(type) {
 			case xproto.MapRequestEvent:
+				if err := MapRequest(actual); err != nil {
+					logrus.Errorf("MapRequest: %s", err)
+				}
 			case xproto.DestroyNotifyEvent:
-			case xproto.PropertyNotifyEvent:
+				if err := DestroyNotify(actual); err != nil {
+					logrus.Errorf("DestroyNotify: %s", err)
+				}
 			}
 		}
 	}()
