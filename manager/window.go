@@ -43,6 +43,8 @@ func Manage(id xproto.Window, attr *xproto.GetWindowAttributesReply) *Window {
 	logrus.Debugf("Manage window 0x%08x", id)
 
 	window := &Window{Id: id}
+	window.SetBorderColor(InactiveBorder)
+
 	node := node.New(window)
 	monitor.Nodes.Append(node)
 
