@@ -93,7 +93,7 @@ func monitor() error {
 			if Focus == nil {
 				Focus = node
 			} else {
-				Focus.Prev().Link(node)
+				node.Link(Focus)
 			}
 
 			logrus.Debugf("Monitor `%s' %s", monitor.Name, geometry)
@@ -123,7 +123,7 @@ func manage() error {
 		Manage(id, attr)
 	}
 
-	for _, node := range Focus.All() {
+	for node := range Focus.Each() {
 		monitor := node.Value.(*Monitor)
 		monitor.Arrange()
 	}
@@ -169,7 +169,7 @@ func NodesFromPointer() (*nd.Node, *nd.Node) {
 }
 
 func NodesFromId(id xproto.Window) (*nd.Node, *nd.Node) {
-	for _, monitorNode := range Focus.All() {
+	for monitorNode := range Focus.Each() {
 		var windowNode *nd.Node
 		WithMonitorNode(monitorNode, func(monitor *Monitor) {
 			windowNode = monitor.NodeFromId(id)

@@ -78,7 +78,7 @@ func (m *Monitor) AddLayout(arranger Arranger) {
 	if node := nd.New(arranger); m.Layout == nil {
 		m.Layout = node
 	} else {
-		m.Layout.Prev().Link(node)
+		node.Link(m.Layout)
 	}
 }
 
