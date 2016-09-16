@@ -1,5 +1,7 @@
 package nd
 
+import "fmt"
+
 type Node struct {
 	next  *Node
 	prev  *Node
@@ -55,6 +57,13 @@ func (node *Node) Select(n int) *Node {
 		}
 	}
 	return node
+}
+
+func (node *Node) Shift(n int) {
+	fmt.Println("Shift", n, node.Value)
+	position := node.Select(n)
+	node.Unlink()
+	fmt.Println("Position", position.Value)
 }
 
 func (node *Node) Swap(other *Node) {
