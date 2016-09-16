@@ -43,21 +43,15 @@ func Manage(id xproto.Window, attr *xproto.GetWindowAttributesReply) *nd.Node {
 	logrus.Debugf("Manage window 0x%08x", id)
 
 	window := &Window{Id: id}
-	window.SetBorderColor(InactiveBorder)
-
 	node := nd.New(window)
+	window.SetBorderColor(InactiveBorder)
 
 	if monitor.Focus == nil {
 		monitor.Root = node
+		monitor.SetFocus(node)
 	} else {
-		current := monitor.Focus.Value.(*Window)
-		current.SetBorderColor(InactiveBorder)
 		node.Link(monitor.Focus)
 	}
-
-	monitor.Focus = node
-	window.Focus()
-	window.SetBorderColor(ActiveBorder)
 
 	return node
 }
